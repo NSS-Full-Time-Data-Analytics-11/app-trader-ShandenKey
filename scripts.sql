@@ -1,7 +1,7 @@
 --a. Develop some general recommendations about the price range, genre, content rating, 
   --or any other app characteristics that the company should target.
-  --**
-  
+  --** low to no cost apps in Games for all ages
+ 
 --b. Develop a Top 10 List of the apps that App Trader should buy based on 
 	--profitability/return on investment as the sole priority.
 	--**find 10 highest rated(both) & lowest priced (in ASA) with high review count(both)
@@ -11,9 +11,9 @@ WITH larg_avg_rating AS (SELECT  name, AVG(psa.rating + asa.rating)/2 AS avg_rat
 						GROUP BY name)
 SELECT name, asa.price, avg_rating
 FROM larg_avg_rating INNER JOIN app_store_apps AS asa USING(name)
-WHERE asa.price < '10.99'
+WHERE asa.price < '3.99'
 GROUP BY name, asa.price, larg_avg_rating.avg_rating
-ORDER BY asa.price DESC
+ORDER BY avg_rating DESC 
 LIMIT 10;
 ---price point change & adding review counts--
 WITH larg_avg_rating AS (SELECT  name, AVG(psa.rating + asa.rating)/2 AS avg_rating
@@ -44,7 +44,8 @@ WHERE asa.price < '5.99'
 GROUP BY name, asa.price, larg_avg_rating.avg_rating, asa.review_count
 HAVING asa.review_count::numeric > (SELECT ROUND(AVG(review_count::numeric),2)
 							FROM app_store_apps)
-ORDER BY asa.price DESC;
+ORDER BY asa.price, avg_rating DESC;
+	--Zombie Catchers, Zombie Tsunami, Plants vs Zombies, Swamp Attack
 
 
 
@@ -54,7 +55,7 @@ SELECT DISTINCT primary_genre FROM app_store_apps  WHERE AVG(rating) >4
 
 SELECT RANK() OVER (PARTITION BY genres ORDER BY price DESC), name, price
 FROM play_store_apps 
-SELECT RANK() OVER (PARTITION BY primary_genre ORDER BY price DESC), name, price
+SELECT DISTINCT primary_genre, RANK() OVER (PARTITION BY primary_genre ORDER BY price ), name, price
 FROM app_store_apps 
 
 --averaging reviews(combining the ratings columns) 328 GAMES
@@ -68,28 +69,17 @@ FROM play_store_apps AS psa
 		INNER JOIN app_store_apps AS asa USING(name)
 GROUP BY name
 ORDER BY count DESC	
-----price
-SELECT AVG(TRIM(LEADING $ FROM psa.price::varchar::numeric::money) + TRIM(LEADING $ FROM asa.price::money)/2 AS avg_price
+----price**this one is weeeeeird
+SELECT AVG(TRIM(LEADING '$' FROM psa.price::varchar::numeric::money) + TRIM(LEADING $ FROM asa.price::money)/2 AS avg_price
 FROM play_store_apps AS psa 
 		INNER JOIN app_store_apps AS asa USING(name)
 		GROUP BY name
 		
-		
-
-
-		   
-		   
-		   
-		   
-		   
-		   
--------not using but used-----
 --ratings on games in both stores
 SELECT  DISTINCT name AS game_name, psa.rating AS ps_rating, asa.rating AS as_rating
 FROM play_store_apps AS psa
 	JOIN app_store_apps AS asa USING(name)
 ORDER BY ps_rating DESC
-
 
 --PS apps by genre
 SELECT genres, COUNT(*) AS number
